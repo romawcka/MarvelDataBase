@@ -8,55 +8,43 @@ import AppBanner from '../appBanner/AppBanner'
 
 import './singleComicPage.scss';
 
-const SingleComicPage = () => {
-  const {comicId} = useParams(),
-        [comic, setComic] = useState(null),
-        {loading, error, getComic, clearError} = useMarvelService();
+const SinglePage = ({Component, dataType}) => {
+  const {id} = useParams(),
+        [data, setData] = useState(null),
+        {loading, error, getComic, clearError, getCharacter} = useMarvelService();
 
   useEffect(() => {
-    updateComic();
-  }, [comicId])
+    updateData();
+  }, [id])
 
-  const updateComic = () => {
+  const updateData = () => {
     clearError();
-    getComic(comicId)
-      .then(onComicLoaded)
+
+    switch (dataType) {
+      case 'comic':
+        getComic(id).then(onDataLoaded);
+        break;
+      case 'character':
+        getCharacter(id).then(onDataLoaded);
+    }
   }
 
   // загрузка удалась
-  const onComicLoaded = (comics) => {
-    setComic(comics);
+  const onDataLoaded = (data) => {
+    setData(data);
   }
 
   const errorMessage = error ? <ErrorMessage/> : null,
         spinner = loading ? <Spinner/> : null,
-        content = !(loading || error || !comic) ? <View comic={comic}/> : null;
+        content = !(loading || error || !data) ? <Component comic={data}/> : null;
   return (
       <>
-      <AppBanner/>
-      {errorMessage}
-      {spinner}
-      {content}
+        <AppBanner/>
+        {errorMessage}
+        {spinner}
+        {content}
       </>
   )
 }
 
-const View = ({comics}) => {
-  const {title, description, pageCount, thumbnail, language, price}  = comics;
-
-  return (
-    <div className="single-comic">
-      <img src={thumbnail} alt={title} className="single-comic__img"/>
-      <div className="single-comic__info">
-          <h2 className="single-comic__name">{title}</h2>
-          <p className="single-comic__descr">{description}</p>
-          <p className="single-comic__descr">{pageCount}</p>
-          <p className="single-comic__descr">Language: {language}</p>
-          <div className="single-comic__price">{price}</div>
-      </div>
-      <Link to={"/comics"} className="single-comic__back">Back to all</Link>
-      </div>
-    )
-}
-
-export default SingleComicPage;
+export default SinglePage;
